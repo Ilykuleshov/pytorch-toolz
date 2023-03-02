@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pytorch_toolz"
+version = "0.0.0"
+authors = [
+  { name="Ilya", email="ilykuleshov@yandex.ru" },
+]
+description = "Functional addition to pytorch for better model-building"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/Ilykuleshov/pytorch-toolz"
+"Bug Tracker" = "https://github.com/Ilykuleshov/pytorch-toolz/issues"
