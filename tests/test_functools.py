@@ -1,7 +1,7 @@
 from typing import Union, Iterable
 from itertools import starmap
 import unittest
-from pytorch_toolz.functools import Filter, Map, Reduce, Apply, Parallel
+from pytorch_toolz.nn import Filter, Map, Reduce, Apply, Parallel
 from torch.nn import Sequential, Identity
 import torch
 import random
