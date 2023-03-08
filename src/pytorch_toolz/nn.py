@@ -1,8 +1,10 @@
-from typing import TypeVar, Tuple, Generic
-from typing import Callable
+from typing import TypeVar, Tuple, Generic, Union, Callable
 from torch.nn import Module, Sequential
 from torch import Tensor
 from functools import reduce
+from operator import itemgetter
+
+Tensors = Tuple[Tensor, ...]
 
 
 class Parallel(Sequential):
@@ -41,7 +43,7 @@ class Map(Module):
         super().__init__()
         self.function = function
 
-    def forward(self, input: Tuple[Tensor, ...]) -> Tuple[Tensor]:
+    def forward(self, input: Tensors) -> Tensors:
         if not isinstance(input, tuple):
             raise RuntimeError('Non-tuple input to Map')
         
@@ -55,19 +57,36 @@ class Filter(Module):
         super().__init__()
         self.function = function
 
-    def forward(self, input: Tuple[Tensor, ...]):
+    def forward(self, input: Tensors):
         if not isinstance(input, tuple):
             raise RuntimeError('Non-tuple input to Filter')
         
         return tuple(filter(self.function, input))
-    
 
-class Apply(Module):
-    """Apply given function to input Tensor
+
+class ItemGetter(Module):
+    """Get specified items from input tuple
     """
-    def __init__(self, function: Callable[[Tensor], Tensor]) -> None:
+    def __init__(self, *items: int) -> None:
+        super().__init__()
+        self.function = itemgetter(*items)
+    
+    def forward(self, input: Tensors) -> Union[Tuple[Tensor, ...], Tensor]:
+        result = self.function(input)
+        if len(result) >  1:
+            return tuple(result)
+        
+        return result
+
+
+I = TypeVar("I", Tensor, Tensors)
+O = TypeVar("O", Tensor, Tensors)
+class Apply(Module, Generic[I, O]):
+    """Apply given function to input
+    """
+    def __init__(self, function: Callable[[I], O]) -> None:
         super().__init__()
         self.function = function
 
-    def forward(self, input: Tensor):
+    def forward(self, input: I) -> O:
         return self.function(input)
