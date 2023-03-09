@@ -13,6 +13,10 @@ This wouldn't be a problem if there had been some universal high-quality library
 
 ### Coding freedom
 I may be overestimating the impact of this approach, but in the very least it would give pytorch users much greater freedom over model building. After all, there should be *many ways to skin a python*.
+
+## Philosophy
+This library is intended to be tiny. It doesn't need to contain anything except the standard tools, already present in python functional modules. This way, it will stay encapsulated, compact and consise, a small toolbox for a big number of things. If some standard itertool/functool is not present here and you find a use for it, please submit an issue/pull-request.
+
 ## Examples
 ### ResBlock
 **functional way**:
