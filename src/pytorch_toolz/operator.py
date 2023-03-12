@@ -10,8 +10,8 @@ class Apply(Module):
         super().__init__()
         self.function = function
 
-    def forward(self, input):
-        return self.function(input)
+    def forward(self, *input):
+        return self.function(*input)
 
 
 T = TypeVar('T')

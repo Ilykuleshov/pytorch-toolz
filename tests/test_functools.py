@@ -1,6 +1,6 @@
-from pytorch_toolz.functools import Filter, Map, Reduce, Parallel
+from pytorch_toolz.functools import Filter, Map, Reduce, Parallel, Sequential
 from pytorch_toolz.operator import Apply
-from torch.nn import Sequential, Identity
+from torch.nn import Identity
 import torch
 
 from .framework import TorchTest

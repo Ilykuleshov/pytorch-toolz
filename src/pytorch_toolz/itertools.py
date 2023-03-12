@@ -6,12 +6,17 @@ from torch.nn import Module
 class Accumulate(Module):
     """Accumulate input using function, see itertools.accumulate
     """
-    def __init__(self, function: Callable) -> None:
+    @overload
+    def __init__(self, function: Callable, /) -> None: ...
+    @overload
+    def __init__(self, function: Callable, *, initial) -> None: ...
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__()
-        self.function = function
+        self.args = args
+        self.kwargs = kwargs
 
     def forward(self, input: Tuple):
-        return tuple(accumulate(input, self.function))
+        return tuple(accumulate(input, *self.args, **self.kwargs))
 
 
 class Repeat(Module):

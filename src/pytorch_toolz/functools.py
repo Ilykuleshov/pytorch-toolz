@@ -1,24 +1,48 @@
-from typing import TypeVar, Tuple, Generic, Callable
-from torch.nn import Module, Sequential
+from typing import TypeVar, Tuple, Generic, Callable, overload
+from torch.nn import Module, Sequential as Sequential_
 from torch import Tensor
 from functools import reduce
 
 
+class Sequential(Sequential_):
+    """A sequential container, nn.Sequential with control over unpacking.
+    """
+    def __init__(self, *args, unpack=False):
+        super().__init__(*args)
+        self.unpack = unpack
+
+    def forward(self, *input):
+        if not self.unpack:
+            input, = input
+
+        for module in self:
+            if self.unpack:
+                input = module(*input)
+            else:
+                input = module(input)
+
+        return input
+
+
 class Parallel(Sequential):
     """A parallel container simmilar to toolz.juxt, opposite of Map.
-    Applies contained layers to input, returns tuple of results. Usage same as nn.Sequential
+    Applies contained layers to input, returns tuple of results. Usage same as Sequential.
     """
-    def forward(self, input):
-        return tuple(module(input) for module in self)
+    def forward(self, *input):
+        if not self.unpack:
+            input, = input
+
+        results = []
+        for module in self:
+            if self.unpack:
+                results.append(module(*input))
+            else:
+                results.append(module(input))
+
+        return tuple(results)
 
 
-class _Functool(Module):
-    def __init__(self, function: Callable) -> None:
-        super().__init__()
-        self.function = function
-
-
-class Reduce(_Functool):
+class Reduce(Module):
     """A module, simmilar to functools.reduce. Applies a two-argument function to given inputs.
     Example usage, simplified residual block:
     ```
@@ -28,8 +52,22 @@ class Reduce(_Functool):
     )
     ```
     """
-    def forward(self, input: Tuple):        
-        return reduce(self.function, input)
+    @overload
+    def __init__(self, function: Callable, /) -> None: ...
+    @overload
+    def __init__(self, function: Callable, initial, /) -> None: ...
+    def __init__(self, *args) -> None:
+        super().__init__()
+        self.args = args
+
+    def forward(self, input: Tuple):
+        return reduce(self.args[0], input, *self.args[1:])
+
+
+class _Functool(Module):
+    def __init__(self, function: Callable) -> None:
+        super().__init__()
+        self.function = function
 
 
 class Map(_Functool):
