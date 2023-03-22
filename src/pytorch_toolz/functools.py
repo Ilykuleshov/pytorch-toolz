@@ -1,4 +1,4 @@
-from typing import TypeVar, Tuple, Generic, Callable, overload
+from typing import TypeVar, Tuple, Generic, Callable, overload, Union
 from torch.nn import Module, Sequential as Sequential_
 from torch.nn.parameter import Parameter
 from torch import Tensor
@@ -8,6 +8,7 @@ from functools import reduce
 class Sequential(Sequential_):
     """A sequential container, nn.Sequential with control over unpacking.
     """
+
     def __init__(self, *args, unpack=False):
         super().__init__(*args)
         self.unpack = unpack
@@ -29,6 +30,7 @@ class Parallel(Sequential):
     """A parallel container simmilar to toolz.juxt, opposite of Map.
     Applies contained layers to input, returns tuple of results. Usage same as Sequential.
     """
+
     def forward(self, *input):
         if not self.unpack:
             input, = input
@@ -56,15 +58,27 @@ class Reduce(Module):
     @overload
     def __init__(self, function: Callable, /) -> None: ...
     @overload
-    def __init__(self, function: Callable, initializer, /) -> None: ...
+    def __init__(self, function: Callable, initial, /) -> None: ...
+
     def __init__(self, *args) -> None:
         super().__init__()
-        self.add_module( "bin_op", args[0] )
+        if isinstance(args[0], Module):
+            self.add_module("bin_op", args[0])
+
         self.function = args[0]
-        self.initializer = None if len(args)==1 else Parameter( args[1] )
+        if len(args) == 2:
+            self.initial = args[1]
+            if isinstance(self.initial, Parameter):
+                self.register_parameter("initial", self.initial)
+        
+        if len(args) > 2:
+            raise TypeError(f"Invalid number of arguments passed to {self.__class__.__name__}")
 
     def forward(self, input: Tuple):
-        return reduce( self.function, input, self.initializer )
+        if hasattr(self, 'initial'):
+            return reduce(self.function, input, self.initial)
+        
+        return reduce(self.function, input)
 
 
 class _Functool(Module):
@@ -76,6 +90,7 @@ class _Functool(Module):
 class Map(_Functool):
     """Map given function over input tuple, return resulting tuple.
     """
+
     def forward(self, input: Tuple):
         return tuple(map(self.function, input))
 
@@ -83,5 +98,6 @@ class Map(_Functool):
 class Filter(_Functool):
     """Filter input tuple using given predicate function, return resulting tuple.
     """
+
     def forward(self, input: Tuple):
         return tuple(filter(self.function, input))
