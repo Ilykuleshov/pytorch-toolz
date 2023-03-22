@@ -1,5 +1,5 @@
 from typing import TypeVar, Tuple, Generic, Callable, overload
-from torch.nn import Module, Sequential as Sequential_
+from torch.nn import Module, Parameter, Sequential as Sequential_
 from torch import Tensor
 from functools import reduce
 
@@ -55,13 +55,15 @@ class Reduce(Module):
     @overload
     def __init__(self, function: Callable, /) -> None: ...
     @overload
-    def __init__(self, function: Callable, initial, /) -> None: ...
+    def __init__(self, function: Callable, initializer, /) -> None: ...
     def __init__(self, *args) -> None:
         super().__init__()
-        self.args = args
+        self.add_module( "bin_op", args[0] )
+        self.function = args[0]
+        self.initializer = None if len(args)==1 else Parameter( args[1] )
 
     def forward(self, input: Tuple):
-        return reduce(self.args[0], input, *self.args[1:])
+        return reduce( self.function, input, self.initializer )
 
 
 class _Functool(Module):
