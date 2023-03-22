@@ -1,5 +1,6 @@
 from typing import TypeVar, Tuple, Generic, Callable, overload
-from torch.nn import Module, Parameter, Sequential as Sequential_
+from torch.nn import Module, Sequential as Sequential_
+from torch.nn.parameter import Parameter
 from torch import Tensor
 from functools import reduce
 
