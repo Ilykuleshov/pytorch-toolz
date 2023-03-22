@@ -68,8 +68,6 @@ class Reduce(Module):
         self.function = args[0]
         if len(args) == 2:
             self.initial = args[1]
-            if isinstance(self.initial, Parameter):
-                self.register_parameter("initial", self.initial)
         
         if len(args) > 2:
             raise TypeError(f"Invalid number of arguments passed to {self.__class__.__name__}")
