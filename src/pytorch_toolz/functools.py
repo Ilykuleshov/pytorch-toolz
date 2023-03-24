@@ -62,9 +62,6 @@ class Reduce(Module):
 
     def __init__(self, *args) -> None:
         super().__init__()
-        if isinstance(args[0], Module):
-            self.add_module("bin_op", args[0])
-
         self.function = args[0]
         if len(args) == 2:
             self.initial = args[1]
